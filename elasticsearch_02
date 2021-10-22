@@ -385,14 +385,12 @@ PUT /movie_analyzer
     }
   }
 }
-
 # how to use the analyzer (p.105)
 POST _analyze
 {
   "analyzer": "standard",
   "text": "캐리비안의 해적 "
 }
-
 POST movie_analyzer/_analyze
 {
   "field": "title",
@@ -451,7 +449,6 @@ PUT movie_analyzer/_doc/1
 {
   "title": "Harry Potter and the Chamber of Secrets"
 }
-
 POST movie_analyzer/_search
 {
   "query": {
@@ -461,21 +458,18 @@ POST movie_analyzer/_search
     }
   }
 }
-
 # standard analyzer (p.109)
 POST movie_analyzer/_analyze
 {
   "analyzer": "standard",
   "text": "Harry Potter and the Chamber of Secrets"
 }
-
 # whitespace analyzer (p.110)
 POST movie_analyzer/_analyze
 {
   "analyzer": "whitespace",
   "text": "Harry Potter and the Chamber of Secrets"
 }
-
 # keyword analyzer (p.110)
 POST movie_analyzer/_analyze
 {
@@ -507,9 +501,343 @@ PUT movie_html_analyzer
     }
   }
 }
-
 POST movie_html_analyzer/_analyze
 {
   "analyzer": "html_strip_analyzer",
   "text": "<span>Harry Potter</span> and the <b>Chamber</b> of Secrets"
+}
+# whitespace tokenizer (p.113)
+POST movie_analyzer/_analyze
+{
+  "analyzer": "whitespace",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# ngram tokenizer (p.114)
+PUT movie_ngram_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "ngram_analyzer": {
+          "tokenizer": "ngram_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 3,
+          "max_gram": 3,
+          "token_chars": [
+            "letter"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_ngram_analyzer/_analyze
+{
+  "tokenizer": "ngram_tokenizer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# edge ngram tokenizer (p.116)
+PUT movie_engram_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "ngram_analyzer": {
+          "tokenizer": "edge_ngram_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "edge_ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": [
+            "letter"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_engram_analyzer/_analyze
+{
+  "tokenizer": "edge_ngram_tokenizer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+# keyword tokenizer
+POST movie_analyzer/_analyze
+{
+  "tokenizer": "keyword",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# token filter
+# ascii folding token filter (p.118)
+PUT movie_af_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "asciifolding_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "asciifolding"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_af_analyzer/_analyze
+{
+  "analyzer": "asciifolding_analyzer",
+  "text": "hello javacàfe"
+}
+
+# lowercase token filter (p.119)
+PUT movie_lower_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "lowercase_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_lower_analyzer/_analyze
+{
+  "analyzer": "lowercase_analyzer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# uppercase token filter (p.120)
+PUT movie_upper_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "uppercase_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "uppercase"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_upper_analyzer/_analyze
+{
+  "analyzer": "uppercase_analyzer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# stop token filter (p.121)
+PUT movie_stop_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "stop_filter_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "stop_filter"
+          ]
+        }
+      },
+      "filter": {
+        "stop_filter": {
+          "type": "stop",
+          "stopwords": [
+            "and",
+            "is",
+            "the"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_stop_analyzer/_analyze
+{
+  "analyzer": "stop_filter_analyzer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# stemmer token filter (p.122)
+PUT movie_stem_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "stemmer_eng_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "stemmer_eng_filter"
+          ]
+        }
+      },
+      "filter": {
+        "stemmer_eng_filter": {
+          "type": "stemmer",
+          "name": "english"
+        }
+      }
+    }
+  }
+}
+POST movie_stem_analyzer/_analyze
+{
+  "analyzer": "stemmer_eng_analyzer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# synonym token filter (p.124)
+PUT movie_syno_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "synonym_analyzer": {
+          "tokenizer": "whitespace",
+          "filter": [
+            "synonym_filter"
+          ]
+        }
+      },
+      "filter": {
+        "synonym_filter": {
+          "type": "synonym",
+          "synonyms": [
+            "Harry => 해리"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_syno_analyzer/_analyze
+{
+  "analyzer": "synonym_analyzer",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# trim token filter (p.125)
+PUT movie_trim_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "trim_analyzer": {
+          "tokenizer": "keyword",
+          "filter": [
+            "lowercase",
+            "trim"
+          ]
+        }
+      }
+    }
+  }
+}
+POST movie_trim_analyzer/_analyze
+{
+  "analyzer": "trim_analyzer",
+  "text": "   Harry Potter and the Chamber of Secrets  "
+}
+
+# synonym dictionary (p.126)
+DELETE movie_analyzer
+PUT movie_analyzer
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "synonym_analyzer": {
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "synonym_filter"
+            ]
+          }
+        },
+        "filter": {
+          "synonym_filter": {
+            "type": "synonym",
+            "ignore_case": true,
+            "synonyms_path": "analysis/synonym.txt"
+          }
+        }
+      }
+    }
+  }
+}
+POST movie_analyzer/_analyze
+{
+  "analyzer": "synonym_analyzer",
+  "text": "Elasticsearch Harry Potter"
+}
+
+POST movie_analyzer/_close
+POST movie_analyzer/_open
+
+# document API (p.132)
+POST movie_dynamic/_doc/
+{
+  "movieCd": "20173732",
+  "movieNm": "살아남은 아이",
+  "movieNmEn": "Last Child",
+  "typeNm": "장편"
+}
+
+POST movie_dynamic/_doc/1
+{
+  "nationAlt": "한국"
+}
+POST movie_dynamic/_doc/1?version=1
+{
+  "nationAlt": "한국"
+}
+# operation type (p.135)
+DELETE movie_dynamic/_doc/1
+PUT movie_dynamic/_doc/1?op_type=create
+{
+  "movieCd": "20173732",
+  "movieNm": "살아남은 아이",
+  "movieNmEn": "Last Child",
+  "typeNm": "단편"
+}
+
+# timeout setting (p.137)
+PUT movie_dynamic/_doc/1?timeout=5m
+{
+  "movieCd": "20173732",
+  "movieNm": "살아남은 아이",
+  "movieNmEn": "Last Child",
+  "typeNm": "장편"
+}
+
+# index API (p.138)
+PUT movie_dynamic/_doc/1
+{
+  "movieCd": "20173732",
+  "movieNm": "살아남은 아이",
+  "movieNmEn": "Last Child",
+  "typeNm": "단편"
 }
