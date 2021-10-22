@@ -121,3 +121,395 @@ POST movie_search/_search
     }
   }
 }
+
+# _source meta-field (p.81)
+PUT /reindex_movie
+
+POST /_reindex
+{
+  "source": {
+    "index": "movie_search",
+    "query": {
+      "match": {
+        "movieCd": "20173732"
+      }
+    }
+  },
+  "dest": {
+    "index": "reindex_movie"
+  }, 
+  "script": {
+    "source": "ctx._source.prdtYear++"
+  }
+}
+
+# compare two documents (p.82)
+# 1
+POST movie_search/_search
+{
+  "query": {
+    "term": {
+      "movieCd": "20173732"
+    }
+  }
+}
+# 2
+POST reindex_movie/_search
+{
+  "query": {
+    "term": {
+      "movieCd": "20173732"
+    }
+  }
+}
+
+# _routing meta-field (p.84)
+# Hash (document_id) % num_of_shards
+# Hash (_routing) % num_of_shards
+PUT movie_routing/_doc/1?routing=ko
+{
+  "repGenreNm": "한국어",
+  "movieNm": "살아남은 아이"
+}
+
+POST movie_routing/_doc/_search?routing=ko
+
+
+# ----------------------------------------
+# ----------------------------------------
+# ----------------------------------------
+# keyword datatype (p.86)
+PUT movie_search_datatype/_mapping/_doc
+{
+  "properties": {
+    "multiMovieYn": {
+      "type": "keyword"
+    }
+  }
+}
+# text datatype (p.87)
+PUT movie_text/_mapping/_doc
+{
+  "properties": {
+    "movieComment": {
+      "type": "text"
+    }
+  }
+}
+PUT movie_text/_mapping/_doc
+{
+  "properties": {
+    "movieComment": {
+      "type": "text",
+      "fields": {
+        "movieComment_keyword": {
+          "type" : "keyword"
+        }
+      }
+    }
+  }
+}
+# array datatype(p.89)
+PUT movie_search_datatype/_doc1
+{
+  "title": "해리포터와 마법사의 돌",
+  "subtitleLang" : ["ko", "en"]
+}
+# numeric datatype(p.90)
+PUT movie_text/_mapping/_doc
+{
+  "properties": {
+    "year": {
+      "type": "integer"
+    }
+  }
+}
+# date datatype (p.90)
+PUT movie_text/_mapping/_doc
+{
+  "properties": {
+    "date": {
+      "type": "date","format": "yyyy-MM-dd HH:mm:ss"
+    }
+  }
+}
+# range datatype (p.91)
+PUT movie_search_datatype/_mapping/_doc
+{
+  "properties": {
+    "showRange": {
+      "type": "date_range"
+    }
+  }
+}
+PUT movie_search_datatype/_mapping/_doc/2
+{
+  "showRange": {
+    "gte": "2001-01-01",
+    "lte": "2001-12-31"
+  }
+}
+# boolean datatype (p.92)
+PUT movie_text/_mapping/_doc
+{
+  "properties": {
+    "check": {
+      "type": "boolean"
+    }
+  }
+}
+# Geo-Point datatype (p.93)
+PUT movie_search_datatype/_mapping/_doc/3
+{
+  "title" : "해리포터와 마법사의 돌",
+  "filmLocation": {
+    "lat" : 55.4155828,
+    "lon" : -1.7081091
+  }
+}
+# IP datatype (p.93)
+PUT movie_search_datatype/_mapping/_doc
+{
+  "properties": {
+    "ipAddr": {
+      "type": "ip"
+    }
+  }
+}
+PUT movie_search_datatype/_doc/4
+{
+  "ipAddr": "127.0.0.1"
+}
+# Object datatype (p.93)
+PUT movie_search_datatype/_mapping/_doc
+{
+  "properties": {
+    "companies": {
+      "properties": {
+        "companyName": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}
+PUT movie_search_datatype/_doc/5
+{
+  "title" : "해리포터와 마법사의 돌",
+  "companies": {
+    "companyName": "워너브라더스"
+  }
+}
+PUT movie_search_datatype/_doc/6
+{
+  "title" : "해리포터와 마법사의 돌",
+  "companies": [
+    {
+      "companyName": "워너브라더스"
+    }, {
+      "companyName": "Heyday Films"
+    }
+  ]
+}
+PUT movie_search_datatype/_doc/7
+{
+  "title" : "해리포터와 마법사의 돌",
+  "companies": [
+    {
+      "companyCd": "1", 
+      "companyName": "워너브라더스"
+    }, {
+      "companyCd": "2", 
+      "companyName": "Heyday Films"
+    }
+  ]
+}
+PUT movie_search_datatype/_mapping/_doc
+{
+  "properties": {
+    "companies_nested": {
+      "type": "nested"
+    }
+  }
+}
+PUT movie_search_datatype/_search
+{
+  "query": {
+    "path": "companies_nested",
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "match": { "companies_nested.companyName": "워너브라더스" }
+          }, {
+            "match": { "companies_nested.companyCd": "2" }
+          }
+        ]
+      }
+    }
+  }
+}
+# ----------------------------------------
+# ----------------------------------------
+# ----------------------------------------
+
+# text analyze (p.98)
+POST _analyze
+{
+  "analyzer" : "standard",
+  "text" : "우리나라가 좋은나라, 대한민국 화이팅"
+}
+
+# structure of the analyzer (p.103)
+# <B>Elasticsearch<\B> is cool
+PUT /movie_analyzer
+{
+  "settings": {
+    "index" : {
+      "number_of_shards": 5,
+      "number_of_replicas": 1
+    }
+  },
+  "analysis": {
+    "analyzer": {
+      "custom_movie_analyzer": {
+        "type": "custom",
+        "char_filter": [
+          "html_strip"
+        ],
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase"
+        ]
+      }
+    }
+  }
+}
+
+# how to use the analyzer (p.105)
+POST _analyze
+{
+  "analyzer": "standard",
+  "text": "캐리비안의 해적 "
+}
+
+POST movie_analyzer/_analyze
+{
+  "field": "title",
+  "text": "캐리비안의 해적"
+}
+
+# (p.107)
+DELETE movie_analyzer
+PUT movie_analyzer
+{
+  "settings": {
+    "index" : {
+      "number_of_shards": 5,
+      "number_of_replicas": 1
+    },
+    "analysis": {
+      "analyzer": {
+        "movie_lower_test_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "movie_stop_test_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "english_stop"
+          ]
+        }
+      },
+      "filter": {
+        "english_stop": {
+          "type": "stop",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "analyzer": "movie_stop_test_analyzer",
+          "search_analyzer": "movie_lower_test_analyzer"
+        }
+      }
+    }
+  }
+}
+
+PUT movie_analyzer/_doc/1
+{
+  "title": "Harry Potter and the Chamber of Secrets"
+}
+
+POST movie_analyzer/_search
+{
+  "query": {
+    "query_string": {
+      "default_operator": "AND",
+      "query": "Chamber of Secrets"
+    }
+  }
+}
+
+# standard analyzer (p.109)
+POST movie_analyzer/_analyze
+{
+  "analyzer": "standard",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# whitespace analyzer (p.110)
+POST movie_analyzer/_analyze
+{
+  "analyzer": "whitespace",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# keyword analyzer (p.110)
+POST movie_analyzer/_analyze
+{
+  "analyzer": "keyword",
+  "text": "Harry Potter and the Chamber of Secrets"
+}
+
+# html strip char filter
+PUT movie_html_analyzer
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "html_strip_analyzer": {
+          "tokenizer": "keyword",
+          "char_filter": [
+            "html_strip_char_filter"
+          ]
+        }
+      },
+      "char_filter": {
+        "html_strip_char_filter": {
+          "type": "html_strip",
+          "escaped_tags": [
+            "b"
+          ]
+        }
+      }
+    }
+  }
+}
+
+POST movie_html_analyzer/_analyze
+{
+  "analyzer": "html_strip_analyzer",
+  "text": "<span>Harry Potter</span> and the <b>Chamber</b> of Secrets"
+}
