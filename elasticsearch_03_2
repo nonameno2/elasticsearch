@@ -1,0 +1,112 @@
+# 05 데이터 집계 (p.191)
+
+GET /_cat/indices/apche*?v&pretty
+GET /apache-web-log/_search?size=0
+{
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "region_count": {
+      "terms": {
+        "field": "geoip.region_name.keyword",
+        "size": 20
+      }
+    }
+  }
+}
+
+# sum aggregation (p.206)
+GET /apache-web-log/_search?size=0
+{
+  "aggs": {
+    "total_bytes": {
+      "sum": {
+        "field": "bytes"
+      }
+    }
+  }
+}
+GET /apache-web-log/_search?size=0
+{
+  "query": {
+    "constant_score": {
+      "filter": {
+        "match": { "geoip.city_name": "Paris" }
+      }
+    }
+  },
+  "aggs": {
+    "total_bytes": {
+      "sum": {
+        "field": "bytes"
+      }
+    }
+  }
+}
+GET /apache-web-log/_search?size=0
+{
+  "query": {
+    "constant_score": {
+      "filter": {
+        "match": { "geoip.city_name": "Paris" }
+      }
+    }
+  },
+  "aggs": {
+    "total_bytes": {
+      "sum": {
+        "script": {
+          "lang": "painless",
+          "source": "doc.bytes.value"
+        }
+      }
+    }
+  }
+}
+GET /apache-web-log/_search?size=0
+{
+  "query": {
+    "constant_score": {
+      "filter": {
+        "match": { "geoip.city_name": "Paris" }
+      }
+    }
+  },
+  "aggs": {
+    "total_bytes": {
+      "sum": {
+        "script": {
+          "lang": "painless",
+          "source": "doc.bytes.value / params.divide_value",
+          "params": {
+            "divide_value": 1000
+          }
+        }
+      }
+    }
+  }
+}
+GET /apache-web-log/_search?size=0
+{
+  "query": {
+    "constant_score": {
+      "filter": {
+        "match": { "geoip.city_name": "Paris" }
+      }
+    }
+  },
+  "aggs": {
+    "total_bytes": {
+      "sum": {
+        "script": {
+          "lang": "painless",
+          "source": "doc.bytes.value / (double)params.divide_value",
+          "params": {
+            "divide_value": 1000
+          }
+        }
+      }
+    }
+  }
+}
