@@ -285,6 +285,18 @@ POST movie_search/_search
     }
   }
 }
+GET /_search
+{
+    "query": {
+        "bool": {
+            "must_not": {
+                "exists": {
+                    "field": "user"
+                }
+            }
+        }
+    }
+}
 # query string (p.174)
 POST movie_search/_search
 {
@@ -394,5 +406,86 @@ GET movie_nested/_search
         }
       ]
     }
+  }
+}
+
+# Additional search API (p.197)
+# dynamic
+PUT _cluster/settings
+{
+  "transient": {
+    "cluster.routing.use_adaptive_replica_selection": true
+  }
+}
+# global timeout (p.181)
+PUT _cluster/settings
+{
+  "transient": {
+    "search.default_search_timeout": "1s"
+  }
+}
+
+# search shards API
+POST movie_search/_search_shards
+
+# multi search API (p.183)
+POST _msearch
+{"index": "movie_auto"}
+{"query": {"match_all": {}}, "from" : 0, "size": 10}
+{"index": "movie_search"}
+{"query": {"match_all": {}}, "from" : 0, "size": 10}
+
+# count API
+POST movie_search/_count?q=prdtYear:2017
+POST movie_search/_count
+{
+  "query": {
+    "query_string": {
+      "default_field": "prdtYear",
+      "query": "2017"
+    }
+  }
+}
+# validate API
+POST movie_search/_validate/query?q=prdtYear:2017
+POST movie_search/_validate/query
+{
+  "query": {
+    "match": {
+      "prdtYear": "2017"
+    }
+  }
+}
+POST movie_search/_validate/query?rewrite=true
+{
+  "query": {
+    "match": {
+      "prdtYear": "2017-10-10"
+    }
+  }
+}
+# explain API
+POST movie_search/_search
+{
+  "query": {
+    "term": {
+      "prdtYear": 2017
+    }
+  }
+}
+POST movie_search/_doc/eDzJqmkBjjM-ebDb8PsR/_explain
+{
+  "query": {
+    "term": {
+      "prdtYear": 2017
+    }
+  }
+}
+# profile API
+POST movie_search/_search
+{
+  "profile": "true",
+  "query": {
+    "match_all": {}
   }
 }
