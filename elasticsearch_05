@@ -1,3 +1,4 @@
+# elastic search day 5
 
 PUT my_index/_doc/1
 {
@@ -8,4 +9,85 @@ PUT my_index/_doc/1
 GET my_index/_doc/1
 
 DELETE my_index/_doc/1
-#DELETE my_index
+DELETE my_index
+
+PUT my_index/_doc/1
+{
+  "age": 40
+}
+ 
+POST my_index/_update/1
+{
+  "doc": {
+    "age": 40
+  }
+}
+
+POST _bulk
+{"index":{"_index":"test","_id":"1"}}
+{"field":"value one"}
+{"index":{"_index":"test","_id":"2"}}
+{"field":"value two"}
+{"delete":{"_index":"test","_id":"2"}}
+{"create":{"_index":"test","_id":"3"}}
+{"field":"value three"}
+{"update":{"_index":"test","_id":"1"}}
+{"doc":{"field":"value two"}}
+
+GET test/_doc/1
+GET test/_doc/2
+GET test/_doc/3
+
+GET test/_search?q=two
+GET test/_search?q=three
+GET test/_search?q=field:three AND field:value
+
+GET test/_search
+{
+  "query": {
+    "match": {
+      "message": "hi"
+    }
+  }
+}
+
+GET _cat/indices
+GET logstash-*/_search
+DELETE logstash*
+
+GET _analyze
+{
+  "analyzer": "nori",
+  "text": ["동해물과 백두산이"]
+}
+
+# my_nori 인덱스에 "해물" 사전을 추가한 my_nori_tokenizer 생성
+PUT my_nori
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "my_nori_tokenizer": {
+          "type": "nori_tokenizer",
+          "user_dictionary_rules": [
+            "해물"]
+        }
+      }
+    }
+  }
+}
+# my_nori_tokenizer 토크나이저로 "동해물과" 분석
+GET my_nori/_analyze
+{
+  "tokenizer": "my_nori_tokenizer",
+  "text": [
+    "동해물과"]
+}
+
+
+
+
+
+
+
+
