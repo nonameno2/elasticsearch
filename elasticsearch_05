@@ -1,0 +1,11 @@
+
+PUT my_index/_doc/1
+{
+  "name":"Jeongjoon Kim",
+  "message":"안녕하세요 Elasticsearch"
+}
+
+GET my_index/_doc/1
+
+DELETE my_index/_doc/1
+#DELETE my_index
