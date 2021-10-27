@@ -84,10 +84,81 @@ GET my_nori/_analyze
     "동해물과"]
 }
 
+DELETE my_nori
+PUT my_nori
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "nori_none": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "none"
+        },
+        "nori_discard": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "none"
+        },
+        "nori_mixed": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "none"
+        }
+      }
+    }
+  }
+}
+GET my_nori/_analyze
+{
+  "tokenizer": "nori_none",
+  "text": [
+    "백두산이"]
+}
+GET my_nori/_analyze
+{
+  "tokenizer": "nori_discard",
+  "text": [
+    "백두산이"]
+}
+GET my_nori/_analyze
+{
+  "tokenizer": "nori_mixed",
+  "text": [
+    "백두산이"]
+}
 
 
+PUT my_pos
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "filter": {
+          "my_pos_f": {
+            "type": "nori_part_of_speech",
+            "stoptags": [
+              "NR"]
+          }
+        }
+      }
+    }
+  }
+}
+# my_pos_f 토큰필터로 "다섯아이가" 분석"
+GET my_pos/_analyze
+{
+  "tokenizer": "nori_tokenizer",
+  "filter": [
+    "my_pos_f"
+  ],
+  "text": "다섯아이가"
+}
 
+GET _cat/indices
+GET filebeat-7.14.1*/_search
 
+GET filebeat-7.14.1*/_count
+DELETE filebeat*
 
+GET /covid-kr-time
+GET /covid-kr-time/_search
 
 
